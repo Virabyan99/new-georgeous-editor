@@ -1,22 +1,79 @@
 "use client";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Editor from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
 
 export default function Home() {
   const [dividerPos, setDividerPos] = useState(50);
   const isResizing = useRef(false);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const consoleRef = useRef<HTMLDivElement>(null);
+  const decorationsRef = useRef<string[]>([]); // Store active decorations
 
-  const handleEditorDidMount = (editor: any) => {
+  const handleEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
+
+    // Update marker dynamically when content changes
+    editor.onDidChangeModelContent(() => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = requestAnimationFrame(() => {
+        addLastLineMarker();
+      });
+    });
+
+    addLastLineMarker(); // Initial marker placement
   };
+
+  // Function to add a single marker only on the last line
+  const addLastLineMarker = () => {
+    if (!editorRef.current) return;
+    const editor = editorRef.current;
+    const model = editor.getModel();
+    if (!model) return;
+
+    const lines = model.getLinesContent();
+    const lastLineIndex = lines.length; // Get last line index
+    const lastLineText = lines[lastLineIndex - 1] || ""; // Get last line content
+
+    const lastCharPosition = lastLineText.length + 1; // Position at the end of the last line
+    const lastLineIsEmpty = lastLineText.trim() === "";
+
+    // Determine where to place the marker
+    const markerPosition = lastLineIsEmpty
+      ? new monaco.Range(lastLineIndex, 1, lastLineIndex, 1) // Start of new line
+      : new monaco.Range(lastLineIndex, lastCharPosition, lastLineIndex, lastCharPosition); // End of last word
+
+    const newDecorations = [
+      {
+        range: markerPosition,
+        options: {
+          isWholeLine: false,
+          afterContentClassName: "line-marker", // Attach marker at the correct place
+        },
+      },
+    ];
+
+    // Apply new decorations while keeping track of previous ones
+    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
+  };
+
+  useEffect(() => {
+    if (consoleRef.current) {
+      consoleRef.current.style.fontSize = "16px";
+      consoleRef.current.style.fontFamily = "Fira Code, monospace";
+      consoleRef.current.style.lineHeight = "22px";
+      consoleRef.current.style.padding = "10px";
+    }
+  }, []);
 
   const startResizing = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     isResizing.current = true;
-    
+
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", stopResizing);
   }, []);
@@ -25,7 +82,7 @@ export default function Home() {
     isResizing.current = false;
     document.removeEventListener("mousemove", handleMouseMove);
     document.removeEventListener("mouseup", stopResizing);
-    
+
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
@@ -33,16 +90,16 @@ export default function Home() {
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing.current) return;
-    
+
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
-    
+
     animationFrameRef.current = requestAnimationFrame(() => {
       if (!containerRef.current) return;
       const containerWidth = containerRef.current.offsetWidth;
       const newPos = (e.clientX / containerWidth) * 100;
-      
+
       if (newPos > 20 && newPos < 80) {
         setDividerPos(newPos);
       }
@@ -51,6 +108,7 @@ export default function Home() {
 
   return (
     <div className="app-container" ref={containerRef}>
+      {/* Monaco Editor */}
       <div className="editor-container" style={{ width: `${dividerPos}%` }}>
         <Editor
           height="100%"
@@ -60,9 +118,10 @@ export default function Home() {
           theme="vs-dark"
           onMount={handleEditorDidMount}
           options={{
-            automaticLayout: true, // Enable Monaco's auto-layout
+            automaticLayout: true,
             fontSize: 16,
             fontFamily: "Fira Code, monospace",
+            lineHeight: 22,
             lineNumbers: "off",
             minimap: { enabled: false },
             scrollbar: { vertical: "hidden", horizontal: "hidden" },
@@ -79,12 +138,13 @@ export default function Home() {
         />
       </div>
 
-      <div className="divider" 
-           onMouseDown={startResizing} 
-           onDoubleClick={() => setDividerPos(50)} />
+      {/* Divider */}
+      <div className="divider" onMouseDown={startResizing} onDoubleClick={() => setDividerPos(50)} />
 
-      <div className="console-container" 
-           style={{ width: `${100 - dividerPos}%` }} />
+      {/* Console Panel */}
+      <div className="console-container" ref={consoleRef} style={{ width: `${100 - dividerPos}%` }}>
+        <pre>// Console Output Goes Here</pre>
+      </div>
     </div>
   );
 }

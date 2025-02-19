@@ -30,19 +30,26 @@ html, body {
   overflow: hidden;
   margin-top: 7px;
   margin-bottom: 7px;
-  
+}
+
+.editor-container, .console-container {
+  height: 100%;
+  width: 50%;
+  font-size: 16px;
+  font-family: "Fira Code", monospace;
+  line-height: 22px;
 }
 
 .console-container {
-  height: 100%;
-  
+  background: #1e1e1e; /* Match Monaco's dark theme */
+  color: white;
+  overflow-y: auto;
 }
 
-.editor-container {
-  height: 100%;
-  width: 100%;
-  
-  background: transparent !important; /* Removes Monaco’s default background */
+pre {
+  margin: 0;
+  padding: 10px;
+  white-space: pre-wrap; /* Preserve formatting */
 }
 
 .monaco-editor .margin {
@@ -77,6 +84,31 @@ html, body {
 .divider:hover {
   background: rgba(255, 255, 255, 0.6);
 }
+
+.line-marker {
+  position: relative;
+}
+
+.line-marker::after {
+  content: "↵";
+  color: white; /* Slightly more visible */
+  font-size: 20px;
+  pointer-events: none;
+  user-select: none;
+  margin-left: 5px;
+  animation: blink 1s infinite;
+}
+
+/* Blinking effect */
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+
+
+
 
 
 
