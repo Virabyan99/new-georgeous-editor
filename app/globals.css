@@ -6,16 +6,16 @@
 /* General Page Styling */
 html, body {
   font-family: Arial, Helvetica, sans-serif;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevents unwanted scrolling */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  -webkit-text-size-adjust: 100%;
 }
 
-/* Ensures the Next.js root container fills the viewport */
 #__next {
   height: 100%;
   width: 100%;
@@ -23,7 +23,6 @@ html, body {
   flex-direction: column;
 }
 
-/* Main Container */
 .app-container {
   display: flex;
   width: 100vw;
@@ -33,81 +32,75 @@ html, body {
   margin-bottom: 7px;
 }
 
-/* Editor & Console Panel Styling */
+/* Make the layout responsive for mobile */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  .editor-container, .console-container {
+    width: 100% !important;
+    height: 50%;
+  }
+}
+
 .editor-container, .console-container {
-  height: 100%;
-  width: 50%;
   font-size: 16px;
   font-family: "Fira Code", monospace;
   line-height: 22px;
-  overflow: auto; /* Enables scrolling when needed */
+  overflow: auto;
+  transition: none;
+  box-sizing: border-box;
 }
 
-
-/* Console Styling */
 .console-container {
-  background: #1e1e1e; /* Match Monaco's dark theme */
+  background: #1e1e1e;
   color: white;
-  overflow-y: auto;
 }
 
 pre {
   margin: 0;
   padding: 10px;
-  white-space: pre-wrap; /* Preserve formatting */
+  white-space: pre-wrap;
 }
 
-
-
-
-.slider {
+.slider, .scrollbar {
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.847) !important;
   margin-bottom: 20px;
-  
-  }
-
-.scrollbar {
-  margin-top: 20px;
   margin-right: 10px;
-  margin-bottom: 20px;
-  background: gray;
-  border-radius: 10px;
-  
 }
 
 .scrollbar.vertical {
   margin-bottom: 20px;
 }
 
-
-
-
-
-/* Divider Styling */
 .divider {
-  width: 6px;
+  width: 17px;
   background: rgba(255, 255, 255, 0.3);
   cursor: ew-resize;
   height: 100%;
   z-index: 10;
-  transition: background 0.2s;
+  /* Remove transition for immediate effect on mobile */
+  /* transition: background 0.2s;  */
   user-select: none;
   -webkit-user-select: none;
+}
+
+@media (max-width: 768px) {
+  .divider {
+    width: 100%;
+    height: 6px;
+    cursor: ns-resize;
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
 .divider:hover {
   background: rgba(255, 255, 255, 0.6);
 }
 
-/* Last Line Marker Styling */
-.line-marker {
-  position: relative;
-}
-
 .line-marker::after {
   content: "↵";
-  color: white; /* Slightly more visible */
+  color: white;
   font-size: 20px;
   pointer-events: none;
   user-select: none;
@@ -115,7 +108,52 @@ pre {
   animation: blink 1s infinite;
 }
 
-/* Blinking Effect for the Marker */
+/* Scrollbar styling with no hover effect */
+.editor-container::-webkit-scrollbar,
+.console-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.editor-container::-webkit-scrollbar-thumb,
+.console-container::-webkit-scrollbar-thumb {
+  background: white;
+  border-radius: 10px;
+}
+
+.editor-container::-webkit-scrollbar-thumb:hover,
+.console-container::-webkit-scrollbar-thumb:hover {
+  background: white; /* Keep the same color on hover */
+}
+
+.editor-container, .console-container {
+  scrollbar-color: white transparent;
+  scrollbar-width: thin;
+}
+
+/* Firefox scrollbar styles */
+.editor-container, .console-container {
+  scrollbar-color: white transparent;
+  scrollbar-width: thin;
+}
+
+.run-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.run-button:hover {
+  background: #218838;
+}
+
 @keyframes blink {
   0% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -179,11 +217,11 @@ pre {
   }
 }
 
-@layer base {
+/* @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
-}
+} */
