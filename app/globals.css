@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 
-
+/* General Page Styling */
 html, body {
   font-family: Arial, Helvetica, sans-serif;
   height: 100vh;
@@ -23,6 +23,7 @@ html, body {
   flex-direction: column;
 }
 
+/* Main Container */
 .app-container {
   display: flex;
   width: 100vw;
@@ -32,14 +33,18 @@ html, body {
   margin-bottom: 7px;
 }
 
+/* Editor & Console Panel Styling */
 .editor-container, .console-container {
   height: 100%;
   width: 50%;
   font-size: 16px;
   font-family: "Fira Code", monospace;
   line-height: 22px;
+  overflow: auto; /* Enables scrolling when needed */
 }
 
+
+/* Console Styling */
 .console-container {
   background: #1e1e1e; /* Match Monaco's dark theme */
   color: white;
@@ -52,21 +57,31 @@ pre {
   white-space: pre-wrap; /* Preserve formatting */
 }
 
-.monaco-editor .margin {
-  display: none !important; /* Hides left gutter */
+
+
+
+.slider {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.847) !important;
+  margin-bottom: 20px;
+  
+  }
+
+.scrollbar {
+  margin-top: 20px;
+  margin-right: 10px;
+  margin-bottom: 20px;
+  background: gray;
+  border-radius: 10px;
+  
 }
 
-.monaco-editor .scrollbar {
-  display: none !important; /* Hides Monaco’s default scrollbars */
+.scrollbar.vertical {
+  margin-bottom: 20px;
 }
 
-.monaco-editor .monaco-editor-background {
-  background: transparent !important; /* Ensures full transparency */
-}
 
-.monaco-editor .current-line {
-  background: none !important; /* Removes current line highlight */
-}
+
 
 
 /* Divider Styling */
@@ -85,6 +100,7 @@ pre {
   background: rgba(255, 255, 255, 0.6);
 }
 
+/* Last Line Marker Styling */
 .line-marker {
   position: relative;
 }
@@ -99,17 +115,12 @@ pre {
   animation: blink 1s infinite;
 }
 
-/* Blinking effect */
+/* Blinking Effect for the Marker */
 @keyframes blink {
   0% { opacity: 1; }
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
-
-
-
-
-
 
 
 @layer base {

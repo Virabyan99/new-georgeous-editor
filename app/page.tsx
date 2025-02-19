@@ -110,32 +110,43 @@ export default function Home() {
     <div className="app-container" ref={containerRef}>
       {/* Monaco Editor */}
       <div className="editor-container" style={{ width: `${dividerPos}%` }}>
-        <Editor
-          height="100%"
-          width="100%"
-          defaultLanguage="javascript"
-          defaultValue="// Start coding here..."
-          theme="vs-dark"
-          onMount={handleEditorDidMount}
-          options={{
-            automaticLayout: true,
-            fontSize: 16,
-            fontFamily: "Fira Code, monospace",
-            lineHeight: 22,
-            lineNumbers: "off",
-            minimap: { enabled: false },
-            scrollbar: { vertical: "hidden", horizontal: "hidden" },
-            overviewRulerLanes: 0,
-            renderLineHighlight: "none",
-            guides: { indentation: false },
-            folding: false,
-            wordWrap: "on",
-            smoothScrolling: true,
-            cursorBlinking: "smooth",
-            cursorStyle: "line",
-            padding: { top: 10, bottom: 10 },
-          }}
-        />
+      <Editor
+  height="100%"
+  width="100%"
+  defaultLanguage="javascript"
+  defaultValue="// Start coding here..."
+  theme="vs-dark"
+  onMount={handleEditorDidMount}
+  options={{
+    automaticLayout: true,
+    fontSize: 16,
+    fontFamily: "Fira Code, monospace",
+    lineHeight: 22,
+    lineNumbers: "off",
+    minimap: { enabled: false },
+    scrollbar: {
+      vertical: "visible", // Ensures it appears when needed
+      horizontal: "auto",
+      verticalScrollbarSize: 14, 
+      horizontalScrollbarSize: 8,
+      
+      // handleMouseWheel: true, // Ensure scrolling works
+    },
+    overviewRulerLanes: 0,
+    renderLineHighlight: "none",
+    guides: { indentation: false },
+    folding: false,
+    wordWrap: "on",
+    smoothScrolling: true,
+    cursorBlinking: "smooth",
+    cursorStyle: "line",
+    padding: { top: 17, bottom: 17 },
+    scrollBeyondLastLine: false,
+    quickSuggestions: true,
+    
+  }}
+/>
+
       </div>
 
       {/* Divider */}
@@ -143,7 +154,7 @@ export default function Home() {
 
       {/* Console Panel */}
       <div className="console-container" ref={consoleRef} style={{ width: `${100 - dividerPos}%` }}>
-        <pre>// Console Output Goes Here</pre>
+        <pre className="console-content">// Console Output Goes Here</pre>
       </div>
     </div>
   );
