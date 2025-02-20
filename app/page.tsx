@@ -1,7 +1,13 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from "react";
-import Editor from "@monaco-editor/react";
-import * as monaco from "monaco-editor";
+
+import { useState, useRef, useEffect, useCallback } from "react";
+import dynamic from 'next/dynamic';
+
+// Import monaco for type definitions only - this doesn't affect runtime
+import type * as monaco from "monaco-editor";
+
+// Dynamically import the Editor component to prevent SSR issues
+const Editor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 export default function Home() {
   const [dividerPos, setDividerPos] = useState(50);
@@ -14,62 +20,29 @@ export default function Home() {
   const [logs, setLogs] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Mobile detection useEffect - already checks for window, no changes needed
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+    const setMobile = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth <= 768);
+      }
     };
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-    return () => window.removeEventListener('resize', handleResize);
+    const handleResize = () => {
+      setMobile();
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+      setMobile();
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
   }, []);
 
-  const handleEditorDidMount = (editor: monaco.editor.IStandaloneCodeEditor) => {
-    editorRef.current = editor;
-    const handleResize = () => editor.layout();
-    window.addEventListener('resize', handleResize);
-    editor.onDidChangeModelContent(() => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      animationFrameRef.current = requestAnimationFrame(() => {
-        addLastLineMarker();
-      });
-    });
-    addLastLineMarker();
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  };
-
-  const addLastLineMarker = () => {
-    if (!editorRef.current) return;
-    const editor = editorRef.current;
-    const model = editor.getModel();
-    if (!model) return;
-
-    const lines = model.getLinesContent();
-    const lastLineIndex = lines.length;
-    const lastLineText = lines[lastLineIndex - 1] || "";
-    const lastCharPosition = lastLineText.length + 1;
-    const lastLineIsEmpty = lastLineText.trim() === "";
-
-    const markerPosition = lastLineIsEmpty
-      ? new monaco.Range(lastLineIndex, 1, lastLineIndex, 1)
-      : new monaco.Range(lastLineIndex, lastCharPosition, lastLineIndex, lastCharPosition);
-
-    const newDecorations = [
-      {
-        range: markerPosition,
-        options: {
-          isWholeLine: false,
-          afterContentClassName: "line-marker",
-        },
-      },
-    ];
-
-    decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
-  };
-
+  // Console styling useEffect - no window access, no changes needed
   useEffect(() => {
     if (consoleRef.current) {
       consoleRef.current.style.fontSize = "16px";
@@ -79,24 +52,82 @@ export default function Home() {
     }
   }, []);
 
+  // Modified handleEditorDidMount to dynamically import monaco-editor
+  const handleEditorDidMount = async (editor: monaco.editor.IStandaloneCodeEditor) => {
+    if (typeof window !== 'undefined') {
+      const monaco = await import('monaco-editor');
+      editorRef.current = editor;
+      const handleResize = () => editor.layout();
+      window.addEventListener('resize', handleResize);
+      editor.onDidChangeModelContent(() => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+        animationFrameRef.current = requestAnimationFrame(() => {
+          addLastLineMarker(monaco);
+        });
+      });
+      addLastLineMarker(monaco);
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  };
+
+  // Modified addLastLineMarker to accept monaco parameter
+  const addLastLineMarker = (monaco: any) => {
+    if (editorRef.current && typeof window !== 'undefined') {
+      const editor = editorRef.current;
+      const model = editor.getModel();
+      if (!model) return;
+
+      const lines = model.getLinesContent();
+      const lastLineIndex = lines.length;
+      const lastLineText = lines[lastLineIndex - 1] || "";
+      const lastCharPosition = lastLineText.length + 1;
+      const lastLineIsEmpty = lastLineText.trim() === "";
+
+      const markerPosition = lastLineIsEmpty
+        ? new monaco.Range(lastLineIndex, 1, lastLineIndex, 1)
+        : new monaco.Range(lastLineIndex, lastCharPosition, lastLineIndex, lastCharPosition);
+
+      const newDecorations = [
+        {
+          range: markerPosition,
+          options: {
+            isWholeLine: false,
+            afterContentClassName: "line-marker",
+          },
+        },
+      ];
+
+      decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
+    }
+  };
+
+  // Rest of the code (startResizing, stopResizing, handleMouseMove, runCode, return JSX) remains unchanged
   const startResizing = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     isResizing.current = true;
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', stopResizing);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', stopResizing);
+    }
   }, []);
 
   const stopResizing = useCallback(() => {
     isResizing.current = false;
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', stopResizing);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', stopResizing);
+    }
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
   }, []);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing.current) return;
+    if (!isResizing.current || typeof window === 'undefined') return;
   
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -111,7 +142,6 @@ export default function Home() {
   
       if (newPos > 20 && newPos < 80) {
         setDividerPos(newPos);
-        // Recalculate layout for Monaco editor
         if (editorRef.current) {
           editorRef.current.layout();
         }
