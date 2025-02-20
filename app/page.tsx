@@ -45,7 +45,7 @@ export default function Home() {
   // Console styling useEffect - no window access, no changes needed
   useEffect(() => {
     if (consoleRef.current) {
-      consoleRef.current.style.fontSize = "16px";
+      consoleRef.current.style.fontSize = "14px";
       consoleRef.current.style.fontFamily = "Fira Code, monospace";
       consoleRef.current.style.lineHeight = "22px";
       consoleRef.current.style.padding = "10px";
@@ -182,7 +182,7 @@ export default function Home() {
           onMount={handleEditorDidMount}
           options={{
             automaticLayout: true,
-            fontSize: 16,
+            fontSize: 14,
             fontFamily: "Fira Code, monospace",
             lineHeight: 22,
             lineNumbers: "off",
